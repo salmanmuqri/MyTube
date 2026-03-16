@@ -351,10 +351,10 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
       {!playing && !loading && (
         <div className="player-overlay pointer-events-none">
           <button
-            className="pointer-events-auto bg-olive-600/90 hover:bg-olive-500 rounded-full p-5 transition-colors shadow-xl"
+            className="pointer-events-auto bg-olive-600/90 hover:bg-olive-500 rounded-full p-4 sm:p-5 transition-colors shadow-xl"
             onClick={(e) => { e.stopPropagation(); togglePlay(); }}
           >
-            <FiPlay size={36} className="text-white translate-x-0.5" />
+            <FiPlay size={32} className="text-white translate-x-0.5 sm:w-9 sm:h-9" />
           </button>
         </div>
       )}
@@ -412,10 +412,10 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
         </div>
 
         {/* Control buttons row */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
           {/* Left controls */}
           <button
-            className="text-white/90 hover:text-white p-1 transition-colors"
+            className="text-white/90 hover:text-white p-2 sm:p-1 transition-colors"
             onClick={togglePlay}
             title={playing ? 'Pause (k)' : 'Play (k)'}
           >
@@ -423,7 +423,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           </button>
 
           <button
-            className="text-white/70 hover:text-white p-1 transition-colors"
+            className="text-white/70 hover:text-white p-2 sm:p-1 transition-colors"
             onClick={() => {
               if (videoRef.current) {
                 videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
@@ -436,7 +436,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           </button>
 
           <button
-            className="text-white/70 hover:text-white p-1 transition-colors"
+            className="text-white/70 hover:text-white p-2 sm:p-1 transition-colors"
             onClick={() => {
               if (videoRef.current) {
                 videoRef.current.currentTime = Math.min(duration, videoRef.current.currentTime + 10);
@@ -451,7 +451,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           {/* Volume */}
           <div className="flex items-center gap-1 group/vol">
             <button
-              className="text-white/90 hover:text-white p-1 transition-colors"
+              className="text-white/90 hover:text-white p-2 sm:p-1 transition-colors"
               onClick={toggleMute}
               title="Mute (m)"
             >
@@ -464,13 +464,13 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
               step="0.05"
               value={muted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="volume-slider w-0 group-hover/vol:w-18 transition-all overflow-hidden opacity-0 group-hover/vol:opacity-100"
+              className="volume-slider w-[64px] sm:w-0 sm:group-hover/vol:w-[72px] transition-all overflow-hidden opacity-100 sm:opacity-0 sm:group-hover/vol:opacity-100"
               title="Volume"
             />
           </div>
 
           {/* Time display */}
-          <span className="text-white/80 text-xs font-mono ml-1 select-none">
+          <span className="text-white/80 text-[11px] sm:text-xs font-mono ml-0.5 sm:ml-1 select-none">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
 
@@ -484,7 +484,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
             title="Playback speed"
           >
             <MdOutlineSpeed size={18} />
-            <span>{playbackSpeed === 1 ? '1×' : `${playbackSpeed}×`}</span>
+            <span className="hidden sm:inline">{playbackSpeed === 1 ? '1×' : `${playbackSpeed}×`}</span>
           </button>
 
           {/* Quality button */}
@@ -497,12 +497,12 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
               {(currentQuality === 'Auto' || parseInt(currentQuality) >= 720)
                 ? <MdHd size={20} />
                 : <MdSdCard size={18} />}
-              <span>{currentQuality}</span>
+              <span className="hidden sm:inline">{currentQuality}</span>
             </button>
           )}
 
           <button
-            className="text-white/70 hover:text-white p-1 transition-colors"
+            className="text-white/70 hover:text-white p-2 sm:p-1 transition-colors"
             onClick={togglePiP}
             title="Picture-in-picture"
           >
@@ -510,7 +510,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           </button>
 
           <button
-            className={`p-1 transition-colors ${theaterMode ? 'text-olive-400' : 'text-white/70 hover:text-white'}`}
+            className={`p-2 sm:p-1 transition-colors ${theaterMode ? 'text-olive-400' : 'text-white/70 hover:text-white'}`}
             onClick={() => setTheaterMode((p) => !p)}
             title="Theater mode (t)"
           >
@@ -518,7 +518,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           </button>
 
           <button
-            className="text-white/90 hover:text-white p-1 transition-colors"
+            className="text-white/90 hover:text-white p-2 sm:p-1 transition-colors"
             onClick={toggleFullscreen}
             title="Fullscreen (f)"
           >

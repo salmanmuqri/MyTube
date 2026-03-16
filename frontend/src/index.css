@@ -181,6 +181,41 @@ body {
 }
 .center-icon-pop { animation: centerBtnPop 0.5s ease forwards; }
 
+/* Mobile player control tuning */
+@media (max-width: 640px) {
+  .mytube-player .player-controls {
+    padding: 28px 10px 8px;
+  }
+
+  .progress-container {
+    height: 6px;
+    margin-bottom: 8px;
+  }
+
+  .progress-container:hover {
+    height: 6px;
+  }
+
+  .progress-fill::after {
+    transform: translateY(-50%) scale(1);
+    width: 10px;
+    height: 10px;
+  }
+
+  .player-settings-panel,
+  .player-speed-panel,
+  .player-quality-panel {
+    bottom: 64px;
+    right: 8px;
+    min-width: 150px;
+  }
+
+  .settings-item {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+
 /* ────── Toasts / Notifications ────── */
 .toast-olive {
   background: #18181f !important;

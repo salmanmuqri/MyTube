@@ -111,11 +111,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
-_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
-if os.environ.get('CORS_ALLOW_ALL_ORIGINS', '').lower() in ('true', '1') or not _cors_origins:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOWED_ORIGINS = _cors_origins.split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://frontend:3000'
+).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Cache (Redis if available, in-memory fallback)
@@ -179,9 +178,11 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Video upload limits — 5 GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024 * 1024  # 5GB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024 * 1024
+# Video upload limits
+FIVE_GB = 5 * 1024 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = FIVE_GB
+# Keep large files on disk temp storage instead of RAM to avoid worker OOM.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # Logging
 LOGGING = {

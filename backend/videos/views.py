@@ -1,4 +1,3 @@
-import threading
 from rest_framework import generics, status, permissions, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +10,7 @@ from .serializers import (
     VideoUpdateSerializer, CommentSerializer, CategorySerializer, TagSerializer,
     PlaylistSerializer, PlaylistDetailSerializer, PlaylistVideoSerializer
 )
-from .tasks import process_video_task
+from .tasks import process_video_celery
 
 
 class VideoUploadView(generics.CreateAPIView):
@@ -22,10 +21,8 @@ class VideoUploadView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         video = serializer.save()
-        # Process in background thread (works without Celery/Redis)
-        thread = threading.Thread(target=process_video_task, args=(str(video.id),))
-        thread.daemon = True
-        thread.start()
+        # Dispatch to the dedicated Celery worker (survives Gunicorn recycling)
+        process_video_celery.delay(str(video.id))
         return Response(VideoListSerializer(video).data, status=status.HTTP_201_CREATED)
 
 
