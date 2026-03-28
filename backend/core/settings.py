@@ -5,11 +5,11 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
+    'SECRET_KEY',
     'django-insecure-mytube-dev-key-change-in-production-use-50-chars'
 )
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1')
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1')
 
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS', 'localhost,127.0.0.1,backend,0.0.0.0'
