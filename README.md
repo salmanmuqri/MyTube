@@ -157,14 +157,67 @@ Copy `.env.example` to `.env` and fill in values:
 |---|---|---|
 | `SECRET_KEY` | — | Django secret key (generate with `openssl rand -base64 50`) |
 | `DEBUG` | `0` | Set `1` for local dev only |
-| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames |
-| `POSTGRES_DB` | `mytube` | Database name |
-| `POSTGRES_USER` | `mytube` | Database user |
-| `POSTGRES_PASSWORD` | — | **Must be set** |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames. `RAILWAY_PUBLIC_DOMAIN` is auto-detected. |
+| `DATABASE_URL` | — | Full PostgreSQL URL (Railway-style). Takes priority over `POSTGRES_*` vars. |
+| `POSTGRES_DB` | `mytube` | Database name (Docker Compose) |
+| `POSTGRES_USER` | `mytube` | Database user (Docker Compose) |
+| `POSTGRES_PASSWORD` | — | **Must be set** (Docker Compose) |
 | `REDIS_URL` | `redis://redis:6379/0` | Redis connection string |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost` | Comma-separated origins |
-| `HTTP_PORT` | `80` | Port exposed by Nginx |
-| `VITE_API_BASE_URL` | `/api` | API base for frontend build |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost` | Comma-separated origins. `FRONTEND_URL` / `VERCEL_URL` are auto-detected. |
+| `FRONTEND_URL` | — | Your Vercel app URL — auto-added to CORS when set. |
+| `HTTP_PORT` | `80` | Port exposed by Nginx (Docker Compose only) |
+| `VITE_API_BASE_URL` | `/api` | API base for frontend build. Set to your Railway backend URL on Vercel. |
+
+---
+
+## Deploying to Railway (backend) + Vercel (frontend)
+
+This is the recommended cloud deployment. The backend runs on Railway with a managed PostgreSQL database; the frontend is a static build deployed to Vercel.
+
+### Step 1 — Deploy the backend on Railway
+
+1. Create a new **Railway** project and add a **PostgreSQL** service.
+2. Add a new service from this GitHub repo and set the **Root Directory** to `/` (Railway will use `railway.toml` automatically).
+3. In your backend service's **Variables** tab, add:
+
+   | Variable | Value |
+   |---|---|
+   | `SECRET_KEY` | Output of `openssl rand -base64 50` |
+   | `DEBUG` | `0` |
+   | `DATABASE_URL` | Copy the **Connection URL** from your Railway PostgreSQL service's *Connect* tab |
+   | `REDIS_URL` | Copy from your Railway Redis service (if added), or leave blank to disable Celery |
+   | `FRONTEND_URL` | Your Vercel URL — set this **after** step 2 (e.g. `https://mytube.vercel.app`) |
+   | `CORS_ALLOW_ALL_ORIGINS` | `false` |
+
+   > `ALLOWED_HOSTS` does **not** need to be set manually — `RAILWAY_PUBLIC_DOMAIN` is auto-detected.
+
+4. Railway will build and deploy the backend. Note the public URL (e.g. `https://mytube-backend.up.railway.app`).
+
+### Step 2 — Deploy the frontend on Vercel
+
+1. Import this GitHub repo into **Vercel**.
+2. Set the **Build Command** to `cd frontend && npm install && npm run build` and **Output Directory** to `frontend/dist`.
+3. In Vercel's **Environment Variables** (Settings → Environment Variables), add:
+
+   | Variable | Value |
+   |---|---|
+   | `VITE_API_BASE_URL` | Your Railway backend URL **without** a trailing slash, e.g. `https://mytube-backend.up.railway.app` |
+
+4. Trigger a redeploy so the build picks up `VITE_API_BASE_URL`.
+
+### Step 3 — Wire the two services together
+
+1. Copy your Vercel app URL and set it as `FRONTEND_URL` in Railway's Variables tab (this enables CORS).
+2. Redeploy the Railway backend for the CORS change to take effect.
+
+### Step 4 — Seed initial data (optional)
+
+```bash
+# From the Railway shell (Service → Shell tab):
+python manage.py seed_data
+```
+
+This creates default video categories and a demo admin account (`admin@mytube.com` / `admin123`).
 
 ---
 

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+import environ as _environ  # django-environ is in requirements.txt
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,9 +12,17 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1')
 
-ALLOWED_HOSTS = os.environ.get(
-    'ALLOWED_HOSTS', 'localhost,127.0.0.1,backend,0.0.0.0'
-).split(',')
+_allowed_hosts = [
+    h.strip()
+    for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,backend,0.0.0.0').split(',')
+    if h.strip()
+]
+# Railway automatically injects RAILWAY_PUBLIC_DOMAIN — add it so Django accepts
+# requests arriving at the Railway-assigned hostname without manual env var config.
+_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
+if _railway_domain and _railway_domain not in _allowed_hosts:
+    _allowed_hosts.append(_railway_domain)
+ALLOWED_HOSTS = _allowed_hosts
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -68,9 +77,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 AUTH_USER_MODEL = 'users.User'
 
-# Database — uses PostgreSQL in Docker, SQLite for local dev
+# Database — priority: DATABASE_URL (Railway) > POSTGRES_* vars (Docker) > SQLite (local dev)
+#
+# Railway's PostgreSQL add-on exposes a single DATABASE_URL variable of the form:
+#   postgresql://user:password@host:port/dbname
+# docker-compose passes individual POSTGRES_* variables instead.
+_DATABASE_URL = os.environ.get('DATABASE_URL', '')
 POSTGRES_DB = os.environ.get('POSTGRES_DB', '')
-if POSTGRES_DB:
+if _DATABASE_URL:
+    DATABASES = {'default': _environ.Env.db_url_config(_DATABASE_URL)}
+    DATABASES['default']['CONN_MAX_AGE'] = 60
+elif POSTGRES_DB:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -112,10 +129,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('true', '1')
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://frontend:3000'
-).split(',')
+_cors_origins = [
+    o.strip()
+    for o in os.environ.get(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://frontend:3000'
+    ).split(',')
+    if o.strip()
+]
+# Vercel injects VERCEL_URL (e.g. myapp.vercel.app) at build time; Railway can also
+# expose it via FRONTEND_URL.  Add both so CORS works without manual configuration.
+for _origin_host_env in ('VERCEL_URL', 'FRONTEND_URL'):
+    _origin_host = os.environ.get(_origin_host_env, '').strip()
+    if _origin_host:
+        # Normalise: ensure we store a full https:// origin (no trailing slash)
+        if not _origin_host.startswith(('http://', 'https://')):
+            _origin_host = f'https://{_origin_host}'
+        _origin_host = _origin_host.rstrip('/')
+        if _origin_host not in _cors_origins:
+            _cors_origins.append(_origin_host)
+CORS_ALLOWED_ORIGINS = _cors_origins
 CORS_ALLOW_CREDENTIALS = True
 
 # Cache (Redis if available, in-memory fallback)
