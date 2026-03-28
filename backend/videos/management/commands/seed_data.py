@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 username='admin',
                 email='admin@mytube.com',
                 password='admin123',
-                role='admin',
+                role='ADMIN',
             )
             self.stdout.write(self.style.SUCCESS('✅ Superuser created: admin@mytube.com / admin123'))
         else:

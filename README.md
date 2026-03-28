@@ -99,9 +99,10 @@ cp .env.example .env
 
 # 3. Start all services
 docker compose up -d
-
-# 4. Create a Django superuser (one-time)
-docker compose exec backend python manage.py createsuperuser
+# Categories and default accounts are seeded automatically on first start.
+# Default credentials — change before any public deployment:
+#   Admin: admin@mytube.com / admin123
+#   Demo:  demo@mytube.com  / demo123
 ```
 
 App: http://localhost (port 80 by default; change `HTTP_PORT` in `.env`)
@@ -250,7 +251,7 @@ The Django built-in admin is also available at `http://localhost:8000/admin/` (o
 python manage.py shell -c "
 from users.models import User
 u = User.objects.get(username='alice')
-u.is_staff = True; u.role = 'admin'; u.save()
+u.is_staff = True; u.role = 'ADMIN'; u.save()
 "
 ```
 

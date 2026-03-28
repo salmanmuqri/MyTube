@@ -17,6 +17,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -55,6 +57,7 @@ services:
              chmod -R 0777 /app/media /app/staticfiles &&
              python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
+             python manage.py seed_data &&
              gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 1800 --graceful-timeout 120 --keep-alive 75"
 
   celery_worker:
