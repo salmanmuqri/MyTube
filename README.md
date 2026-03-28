@@ -2,6 +2,8 @@
 
 A production-ready, self-hosted intelligent video streaming platform built with Django + React. Upload, process, and stream HD videos with adaptive bitrate (HLS), ML-powered recommendations, full-text search, and a complete admin panel — no cloud dependencies required.
 
+> **👉 New here?** See [SETUP.md](SETUP.md) for a step-by-step guide covering Docker, Railway, and Vercel deployments, first-login verification, and troubleshooting.
+
 ---
 
 ## Features
