@@ -239,7 +239,7 @@ export default function PlaylistDetailPage() {
               <div key={video.id} className="flex gap-4 p-3 rounded-xl bg-olive-800/20 hover:bg-olive-800/40 border border-olive-700/20 hover:border-olive-700/40 transition-colors group">
                 <span className="text-olive-600 text-sm w-6 text-center mt-2 shrink-0 font-mono">{idx + 1}</span>
                 <div className="w-36 sm:w-44 shrink-0">
-                  <Link to={`/watch/${video.id}`}>
+                  <Link to={`/watch/${video.id}?playlist=${playlist.id}`}>
                     <div className="aspect-video bg-olive-800 rounded-lg overflow-hidden">
                       {video.thumbnail
                         ? <img src={video.thumbnail} alt="" className="w-full h-full object-cover" />
@@ -249,7 +249,7 @@ export default function PlaylistDetailPage() {
                   </Link>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <Link to={`/watch/${video.id}`} className="text-olive-100 text-sm font-medium line-clamp-2 hover:text-olive-300 transition-colors">
+                  <Link to={`/watch/${video.id}?playlist=${playlist.id}`} className="text-olive-100 text-sm font-medium line-clamp-2 hover:text-olive-300 transition-colors">
                     {video.title}
                   </Link>
                   <p className="text-olive-400 text-xs mt-1">{video.uploader_name || video.uploader}</p>

@@ -194,7 +194,11 @@ class PlaylistListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Playlist.objects.filter(owner=self.request.user).order_by('-created_at')
+        queryset = Playlist.objects.filter(owner=self.request.user)
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(description__icontains=search))
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -206,7 +210,11 @@ class PublicPlaylistsView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return Playlist.objects.filter(owner_id=user_id, is_public=True).order_by('-created_at')
+        queryset = Playlist.objects.filter(owner_id=user_id, is_public=True)
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(description__icontains=search))
+        return queryset.order_by('-created_at')
 
 
 class PlaylistDetailView(generics.RetrieveUpdateDestroyAPIView):

@@ -51,7 +51,9 @@ services:
     expose:
       - "8000"
     command: >
-      sh -c "python manage.py migrate --noinput &&
+      sh -c "mkdir -p /app/media/originals /app/media/hls /app/media/thumbnails /app/staticfiles &&
+             chmod -R 0777 /app/media /app/staticfiles &&
+             python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
              gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 1800 --graceful-timeout 120 --keep-alive 75"
 
@@ -60,7 +62,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    user: "65534:65534"
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,14 +78,16 @@ services:
       DEBUG: ${DEBUG:-0}
     volumes:
       - media_files:/app/media
-    command: celery -A core worker --loglevel=info --concurrency=2
+    command: >
+      sh -c "mkdir -p /app/media/originals /app/media/hls /app/media/thumbnails &&
+             chmod -R 0777 /app/media &&
+             celery -A core worker --loglevel=info --concurrency=1"
 
   celery_beat:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    user: "65534:65534"
     depends_on:
       postgres:
         condition: service_healthy
@@ -101,7 +104,10 @@ services:
       DEBUG: ${DEBUG:-0}
     volumes:
       - media_files:/app/media
-    command: celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: >
+      sh -c "mkdir -p /app/media/originals /app/media/hls /app/media/thumbnails &&
+             chmod -R 0777 /app/media &&
+             celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
 
   frontend:
     build:

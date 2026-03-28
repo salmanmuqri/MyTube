@@ -16,7 +16,7 @@ function formatTime(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
+export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail, theaterMode = false, onTheaterModeChange }) {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
@@ -39,17 +39,28 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
   const [currentQuality, setCurrentQuality] = useState('Auto');
   const [centerIcon, setCenterIcon] = useState(null); // 'play' | 'pause' | 'forward' | 'back'
   const [seekPreview, setSeekPreview] = useState({ visible: false, x: 0, time: 0 });
-  const [theaterMode, setTheaterMode] = useState(false);
-
+  const [playbackError, setPlaybackError] = useState('');
   const flashCenter = useCallback((type) => {
     setCenterIcon(type);
     setTimeout(() => setCenterIcon(null), 500);
   }, []);
 
+  const toggleTheaterMode = useCallback(() => {
+    onTheaterModeChange?.((prev) => !prev);
+  }, [onTheaterModeChange]);
+
   // Initialize HLS
   useEffect(() => {
     if (!src || !videoRef.current) return;
     const video = videoRef.current;
+
+    setLoading(true);
+    setPlaybackError('');
+    setCurrentTime(0);
+    setDuration(0);
+    setBuffered(0);
+    setQualities([]);
+    setCurrentQuality('Auto');
 
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
 
@@ -74,12 +85,23 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
         setLoading(false);
       });
 
+      hls.on(Hls.Events.LEVEL_LOADED, () => {
+        setLoading(false);
+      });
+
+      hls.on(Hls.Events.FRAG_LOADED, () => {
+        setLoading(false);
+      });
+
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
             hls.startLoad();
           } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
             hls.recoverMediaError();
+          } else {
+            setPlaybackError('Unable to load this video stream.');
+            setLoading(false);
           }
         }
       });
@@ -107,6 +129,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
     const onPause = () => setPlaying(false);
     const onTimeUpdateFn = () => {
       setCurrentTime(video.currentTime);
+      setLoading(false);
       if (video.buffered.length > 0) {
         setBuffered((video.buffered.end(video.buffered.length - 1) / video.duration) * 100);
       }
@@ -119,8 +142,25 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
       }
     };
     const onDurationChange = () => setDuration(video.duration || 0);
-    const onWaiting = () => setLoading(true);
+    const onWaiting = () => {
+      if (!video.paused && !video.ended) {
+        setLoading(true);
+      }
+    };
+    const onLoadedMetadata = () => setLoading(false);
+    const onLoadedData = () => setLoading(false);
     const onCanPlay = () => setLoading(false);
+    const onCanPlayThrough = () => setLoading(false);
+    const onPlaying = () => setLoading(false);
+    const onStalled = () => {
+      if (!video.paused && !video.ended) {
+        setLoading(true);
+      }
+    };
+    const onError = () => {
+      setPlaybackError('This video could not be played.');
+      setLoading(false);
+    };
     const onEndedFn = () => { setPlaying(false); if (onEnded) onEnded(); };
     const onVolumeChange = () => {
       setVolume(video.volume);
@@ -132,7 +172,13 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
     video.addEventListener('timeupdate', onTimeUpdateFn);
     video.addEventListener('durationchange', onDurationChange);
     video.addEventListener('waiting', onWaiting);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('loadeddata', onLoadedData);
     video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('canplaythrough', onCanPlayThrough);
+    video.addEventListener('playing', onPlaying);
+    video.addEventListener('stalled', onStalled);
+    video.addEventListener('error', onError);
     video.addEventListener('ended', onEndedFn);
     video.addEventListener('volumechange', onVolumeChange);
 
@@ -142,7 +188,13 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
       video.removeEventListener('timeupdate', onTimeUpdateFn);
       video.removeEventListener('durationchange', onDurationChange);
       video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('loadeddata', onLoadedData);
       video.removeEventListener('canplay', onCanPlay);
+      video.removeEventListener('canplaythrough', onCanPlayThrough);
+      video.removeEventListener('playing', onPlaying);
+      video.removeEventListener('stalled', onStalled);
+      video.removeEventListener('error', onError);
       video.removeEventListener('ended', onEndedFn);
       video.removeEventListener('volumechange', onVolumeChange);
     };
@@ -194,20 +246,28 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
           toggleFullscreen();
           break;
         case 't':
-          setTheaterMode((p) => !p);
+          e.preventDefault();
+          toggleTheaterMode();
           break;
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [toggleTheaterMode]);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
     if (video.paused) {
-      video.play();
-      flashCenter('play');
+      video.play()
+        .then(() => {
+          setPlaybackError('');
+          flashCenter('play');
+        })
+        .catch(() => {
+          setPlaybackError('Playback could not start.');
+          setLoading(false);
+        });
     } else {
       video.pause();
       flashCenter('pause');
@@ -300,7 +360,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
   return (
     <div
       ref={containerRef}
-      className={`mytube-player group ${!showControls && playing ? 'controls-hidden' : ''} ${theaterMode ? 'w-full' : ''}`}
+      className={`mytube-player group ${!showControls && playing ? 'controls-hidden' : ''} ${theaterMode ? 'theater-active' : ''}`}
       onMouseMove={resetControlsTimer}
       onMouseLeave={() => { if (playing) setShowControls(false); setShowSpeedMenu(false); setShowQualityMenu(false); }}
       onClick={(e) => {
@@ -318,8 +378,16 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
         preload="metadata"
       />
 
+      {playbackError && (
+        <div className="player-overlay">
+          <div className="mx-4 max-w-md rounded-xl border border-red-500/30 bg-black/80 px-4 py-3 text-center text-sm text-red-200 backdrop-blur">
+            {playbackError}
+          </div>
+        </div>
+      )}
+
       {/* Loading Spinner */}
-      {loading && (
+      {loading && !playbackError && (
         <div className="player-overlay">
           <div className="w-12 h-12 border-2 border-white/20 border-t-olive-400 rounded-full animate-spin" />
         </div>
@@ -348,7 +416,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
       )}
 
       {/* Big play button (when paused and not loading) */}
-      {!playing && !loading && (
+      {!playing && !loading && !playbackError && (
         <div className="player-overlay pointer-events-none">
           <button
             className="pointer-events-auto bg-olive-600/90 hover:bg-olive-500 rounded-full p-4 sm:p-5 transition-colors shadow-xl"
@@ -511,7 +579,7 @@ export default function VideoPlayer({ src, onTimeUpdate, onEnded, thumbnail }) {
 
           <button
             className={`p-2 sm:p-1 transition-colors ${theaterMode ? 'text-olive-400' : 'text-white/70 hover:text-white'}`}
-            onClick={() => setTheaterMode((p) => !p)}
+            onClick={toggleTheaterMode}
             title="Theater mode (t)"
           >
             <MdOutlineTheaters size={18} />

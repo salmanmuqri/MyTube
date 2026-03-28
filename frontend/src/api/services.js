@@ -50,11 +50,11 @@ export const getSearchSuggestions = (q) => API.get(`/videos/search-suggestions/?
 export const getSubscriptionFeed = () => API.get('/users/subscriptions/feed/');
 
 // Playlists
-export const getPlaylists = () => API.get('/videos/playlists/');
+export const getPlaylists = (params) => API.get('/videos/playlists/', { params });
 export const createPlaylist = (data) => API.post('/videos/playlists/', data);
 export const getPlaylist = (id) => API.get(`/videos/playlists/${id}/`);
 export const updatePlaylist = (id, data) => API.patch(`/videos/playlists/${id}/`, data);
 export const deletePlaylist = (id) => API.delete(`/videos/playlists/${id}/`);
 export const addVideoToPlaylist = (playlistId, videoId) => API.post(`/videos/playlists/${playlistId}/add-video/`, { video: videoId });
 export const removeVideoFromPlaylist = (playlistId, videoId) => API.delete(`/videos/playlists/${playlistId}/remove-video/${videoId}/`);
-export const getUserPlaylists = (userId) => API.get(`/videos/playlists/user/${userId}/`);
+export const getUserPlaylists = (userId, params) => API.get(`/videos/playlists/user/${userId}/`, { params });

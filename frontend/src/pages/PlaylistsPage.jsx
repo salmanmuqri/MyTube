@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPlaylists, createPlaylist, deletePlaylist } from '../api/services';
-import { FiList, FiPlus, FiLock, FiGlobe, FiTrash2, FiPlay, FiX } from 'react-icons/fi';
+import { FiGlobe, FiList, FiLock, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function PlaylistsPage() {
@@ -10,13 +10,19 @@ export default function PlaylistsPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm]           = useState({ name: '', description: '', is_public: true });
   const [creating, setCreating]   = useState(false);
+  const [search, setSearch]       = useState('');
 
   useEffect(() => {
-    getPlaylists()
-      .then(({ data }) => setPlaylists(data.results || data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    const timer = setTimeout(() => {
+      setLoading(true);
+      getPlaylists(search.trim() ? { search: search.trim() } : undefined)
+        .then(({ data }) => setPlaylists(data.results || data))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, 220);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -26,6 +32,7 @@ export default function PlaylistsPage() {
       const { data } = await createPlaylist(form);
       setPlaylists((prev) => [data, ...prev]);
       setShowModal(false);
+      setSearch('');
       setForm({ name: '', description: '', is_public: true });
       toast.success('Playlist created');
     } catch {
@@ -66,6 +73,16 @@ export default function PlaylistsPage() {
         </button>
       </div>
 
+      <div className="relative mb-6">
+        <FiSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-olive-400" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-olive-700/30 bg-olive-900/70 py-3 pl-10 pr-4 text-sm text-olive-100 placeholder:text-olive-500 focus:border-olive-500/40 focus:outline-none"
+          placeholder="Search playlists by name or description"
+        />
+      </div>
+
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,14 +99,18 @@ export default function PlaylistsPage() {
       ) : playlists.length === 0 ? (
         <div className="text-center py-24">
           <FiList size={56} className="text-olive-700 mx-auto mb-4" />
-          <p className="text-olive-200 text-xl font-semibold">No playlists yet</p>
-          <p className="text-olive-300/50 text-sm mt-2 mb-6">Create your first playlist to organise videos</p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 bg-olive-500 hover:bg-olive-400 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
-          >
-            <FiPlus size={18} /> Create Playlist
-          </button>
+          <p className="text-olive-200 text-xl font-semibold">{search.trim() ? 'No playlists match that search' : 'No playlists yet'}</p>
+          <p className="text-olive-300/50 text-sm mt-2 mb-6">
+            {search.trim() ? 'Try a different name or description keyword.' : 'Create your first playlist to organise videos'}
+          </p>
+          {!search.trim() && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 bg-olive-500 hover:bg-olive-400 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+            >
+              <FiPlus size={18} /> Create Playlist
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
