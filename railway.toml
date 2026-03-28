@@ -1,0 +1,12 @@
+[build]
+# Railway builds the backend image using the Dockerfile in ./backend
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+# Runs migrations then starts gunicorn. $PORT is injected automatically by Railway.
+# --timeout 1800 is intentional: video uploads can be several GB and take many minutes.
+startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 1800"
+healthcheckPath = "/api/health/"
+healthcheckTimeout = 10
+restartPolicyType = "on_failure"

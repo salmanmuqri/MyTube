@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
 });
 
 API.interceptors.request.use((config) => {
@@ -21,7 +23,7 @@ API.interceptors.response.use(
       const tokens = JSON.parse(localStorage.getItem('mytube_tokens') || 'null');
       if (tokens?.refresh) {
         try {
-          const { data } = await axios.post('/api/users/token/refresh/', { refresh: tokens.refresh });
+          const { data } = await axios.post(`${API_BASE}/users/token/refresh/`, { refresh: tokens.refresh });
           const newTokens = { access: data.access, refresh: data.refresh || tokens.refresh };
           localStorage.setItem('mytube_tokens', JSON.stringify(newTokens));
           originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
