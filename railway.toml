@@ -10,3 +10,12 @@ startCommand = "python manage.py migrate --noinput && python manage.py collectst
 healthcheckPath = "/api/health/"
 healthcheckTimeout = 10
 restartPolicyType = "on_failure"
+
+# Railway volumes for persistent storage (replaces Docker VOLUME directive)
+[[volumes]]
+mountPath = "/app/media"
+name = "media-storage"
+
+[[volumes]]
+mountPath = "/app/staticfiles"
+name = "static-storage"
