@@ -1,6 +1,36 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+function normalizeApiBase(rawValue) {
+  const value = (rawValue || '/api').trim();
+
+  if (/^https?:\/\//i.test(value)) {
+    const url = new URL(value);
+    const pathname = url.pathname.replace(/\/+$/, '');
+    url.pathname = pathname.endsWith('/api') ? pathname : `${pathname || ''}/api`;
+    return url.toString().replace(/\/+$/, '');
+  }
+
+  const clean = value.replace(/\/+$/, '');
+  if (clean === '' || clean === '/') return '/api';
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+}
+
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE_URL);
+
+const API_ORIGIN = /^https?:\/\//i.test(API_BASE)
+  ? new URL(API_BASE).origin
+  : window.location.origin;
+
+export const MEDIA_BASE = (import.meta.env.VITE_MEDIA_BASE_URL || `${API_ORIGIN}/media`).replace(/\/+$/, '');
+
+export function toAbsoluteMediaUrl(path) {
+  if (!path) return null;
+  if (/^(https?:)?\/\//i.test(path) || path.startsWith('data:')) return path;
+  if (path.startsWith('/media/')) return `${API_ORIGIN}${path}`;
+  if (path.startsWith('media/')) return `${API_ORIGIN}/${path}`;
+  if (path.startsWith('/')) return `${API_ORIGIN}${path}`;
+  return `${API_ORIGIN}/media/${path}`;
+}
 
 const API = axios.create({
   baseURL: API_BASE,

@@ -11,9 +11,15 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1')
 
-ALLOWED_HOSTS = os.environ.get(
-    'ALLOWED_HOSTS', 'localhost,127.0.0.1,backend,0.0.0.0'
-).split(',')
+
+def _env_csv(name, default=''):
+    value = os.environ.get(name, default)
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+ALLOWED_HOSTS = _env_csv(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,backend,0.0.0.0,.up.railway.app'
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -112,11 +118,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('true', '1')
-CORS_ALLOWED_ORIGINS = os.environ.get(
+CORS_ALLOWED_ORIGINS = _env_csv(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://frontend:3000'
-).split(',')
+)
+CORS_ALLOWED_ORIGIN_REGEXES = _env_csv(
+    'CORS_ALLOWED_ORIGIN_REGEXES',
+    r'^https://.*\.vercel\.app$'
+)
 CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = _env_csv(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:5173,http://127.0.0.1:5173'
+)
 
 # Cache (Redis if available, in-memory fallback)
 REDIS_URL = os.environ.get('REDIS_URL', '')

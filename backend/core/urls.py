@@ -1,3 +1,4 @@
+import os
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -33,5 +34,5 @@ urlpatterns = [
     path('api/admin-panel/trigger-retrain/', admin_views.AdminTriggerRetrainView.as_view(), name='admin-trigger-retrain'),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG or os.environ.get('ENABLE_MEDIA_SERVING', 'False').lower() in ('true', '1'):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { updateProfile, getMyVideos, getUserStats, getSubscriptions, deleteVideo, updateVideo, getCategories } from '../api/services';
+import { toAbsoluteMediaUrl } from '../api/axios';
 import VideoCard from '../components/VideoCard';
 import { FiEdit2, FiSave, FiFilm, FiUsers, FiTrash2, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -106,7 +107,7 @@ export default function ProfilePage() {
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 rounded-full bg-olive-700 flex items-center justify-center text-olive-200 text-3xl font-bold uppercase shrink-0">
               {user.avatar ? (
-                <img src={user.avatar.startsWith('http') ? user.avatar : `/media/${user.avatar}`} alt="" className="w-full h-full rounded-full object-cover" />
+                <img src={toAbsoluteMediaUrl(user.avatar)} alt="" className="w-full h-full rounded-full object-cover" />
               ) : (
                 user.username?.[0]
               )}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FiEye, FiThumbsUp, FiPlay } from 'react-icons/fi';
 import SpotlightCard from './ui/SpotlightCard';
+import { toAbsoluteMediaUrl } from '../api/axios';
 
 function formatDuration(seconds) {
   if (!seconds) return '0:00';
@@ -19,11 +20,8 @@ function timeAgo(dateStr) {
 }
 
 export default function VideoCard({ video }) {
-  const thumbnailUrl = video.thumbnail
-    ? (video.thumbnail.startsWith('http') || video.thumbnail.startsWith('/')
-        ? video.thumbnail
-        : `/media/${video.thumbnail}`)
-    : null;
+  const thumbnailUrl = toAbsoluteMediaUrl(video.thumbnail);
+  const uploaderAvatar = toAbsoluteMediaUrl(video.uploader_avatar);
 
   return (
     <Link to={`/watch/${video.id}`} className="group block">
@@ -76,7 +74,7 @@ export default function VideoCard({ video }) {
             className="w-8 h-8 rounded-full bg-olive-700 border-2 border-olive-600/40 group-hover:border-olive-500/60 flex items-center justify-center text-olive-200 text-xs font-bold uppercase shrink-0 transition-colors duration-300 overflow-hidden"
           >
             {video.uploader_avatar
-              ? <img src={video.uploader_avatar} className="w-full h-full object-cover" alt="" />
+              ? <img src={uploaderAvatar} className="w-full h-full object-cover" alt="" />
               : video.uploader_name?.[0]?.toUpperCase() || '?'
             }
           </Link>

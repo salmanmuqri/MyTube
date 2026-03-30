@@ -11,6 +11,7 @@ import {
   incrementView,
   getPlaylist,
 } from '../api/services';
+import { toAbsoluteMediaUrl } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import VideoPlayer from '../components/VideoPlayer';
 import VideoCard from '../components/VideoCard';
@@ -223,7 +224,8 @@ export default function WatchPage() {
     );
   }
 
-  const hlsUrl = video.hls_path ? `/media/${video.hls_path}` : null;
+  const hlsUrl = toAbsoluteMediaUrl(video.hls_path);
+  const thumbnailUrl = toAbsoluteMediaUrl(video.thumbnail);
 
   return (
     <div className="min-h-screen bg-olive-950">
@@ -235,7 +237,7 @@ export default function WatchPage() {
                 src={hlsUrl}
                 onTimeUpdate={handleTimeUpdate}
                 onEnded={handleEnded}
-                thumbnail={video.thumbnail}
+                thumbnail={thumbnailUrl}
                 theaterMode={theaterMode}
                 onTheaterModeChange={setTheaterMode}
               />
@@ -376,7 +378,7 @@ export default function WatchPage() {
                         <div className="w-20 shrink-0">
                           <div className="aspect-video overflow-hidden rounded-lg bg-olive-800">
                             {item.thumbnail ? (
-                              <img src={item.thumbnail} alt="" className="h-full w-full object-cover" />
+                              <img src={toAbsoluteMediaUrl(item.thumbnail)} alt="" className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-olive-600">
                                 <FiList size={16} />

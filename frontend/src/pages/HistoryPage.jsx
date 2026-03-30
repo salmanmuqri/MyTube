@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getWatchHistory } from '../api/services';
+import { toAbsoluteMediaUrl } from '../api/axios';
 import { FiClock, FiPlay } from 'react-icons/fi';
 
 function timeAgo(dateStr) {
@@ -52,7 +53,7 @@ export default function HistoryPage() {
                 <div className="w-40 h-24 bg-olive-800 rounded overflow-hidden relative shrink-0">
                   {item.video_thumbnail ? (
                     <img
-                      src={item.video_thumbnail.startsWith('http') ? item.video_thumbnail : `/media/${item.video_thumbnail}`}
+                      src={toAbsoluteMediaUrl(item.video_thumbnail)}
                       alt=""
                       className="w-full h-full object-cover"
                     />
