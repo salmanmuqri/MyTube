@@ -47,12 +47,15 @@ CORS_ALLOWED_ORIGIN_REGEXES=^https://.*\.vercel\.app$
 CSRF_TRUSTED_ORIGINS=https://mytube-frontend.vercel.app
 ENABLE_MEDIA_SERVING=true
 
-# Database (auto-filled by Railway from Postgres service)
-POSTGRES_DB=railways
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<will-be-auto-filled>
-POSTGRES_HOST=<will-be-auto-filled>
-POSTGRES_PORT=5432
+# Database (preferred: single source of truth)
+DATABASE_URL=<copy from Railway Postgres Connect tab>
+
+# Optional: only if DATABASE_URL is not set
+# POSTGRES_DB=<from Railway>
+# POSTGRES_USER=<from Railway>
+# POSTGRES_PASSWORD=<from Railway>
+# POSTGRES_HOST=<from Railway>
+# POSTGRES_PORT=5432
 
 # Redis (auto-filled by Railway from Redis service)
 REDIS_URL=<will-be-auto-filled>
@@ -61,8 +64,8 @@ REDIS_URL=<will-be-auto-filled>
 **How to fill auto-populated values:**
 1. Click the **Postgres service** in Railway dashboard
 2. Go to **Variables** tab
-3. Copy `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `DATABASE_URL` (contains host:port)
-4. Paste into backend variables (Railway usually auto-links them; if not, manually copy)
+3. Copy `DATABASE_URL` from the Postgres **Connect** tab and paste it into backend variables
+4. Do not manually invent DB username/password; use Railway-provided values only
 5. Do the same for Redis service → copy `REDIS_URL`
 
 **For `SECRET_KEY`**: Generate a 16+ character random string:

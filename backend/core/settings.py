@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from urllib.parse import urlparse, unquote
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -74,17 +75,49 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 AUTH_USER_MODEL = 'users.User'
 
-# Database — uses PostgreSQL in Docker, SQLite for local dev
-POSTGRES_DB = os.environ.get('POSTGRES_DB', '')
-if POSTGRES_DB:
+# Database — prefer DATABASE_URL (Railway), then explicit env vars, then SQLite fallback
+def _database_from_url(raw_url: str):
+    parsed = urlparse(raw_url)
+    if parsed.scheme not in ('postgres', 'postgresql'):
+        return None
+
+    db_name = (parsed.path or '').lstrip('/')
+    if not db_name:
+        return None
+
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(db_name),
+        'USER': unquote(parsed.username or ''),
+        'PASSWORD': unquote(parsed.password or ''),
+        'HOST': parsed.hostname or '',
+        'PORT': str(parsed.port or '5432'),
+        'CONN_MAX_AGE': 60,
+    }
+
+
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+database_from_url = _database_from_url(DATABASE_URL) if DATABASE_URL else None
+
+postgres_name = os.environ.get('POSTGRES_DB') or os.environ.get('PGDATABASE') or ''
+postgres_user = os.environ.get('POSTGRES_USER') or os.environ.get('PGUSER') or ''
+postgres_password = os.environ.get('POSTGRES_PASSWORD') or os.environ.get('PGPASSWORD') or ''
+postgres_host = os.environ.get('POSTGRES_HOST') or os.environ.get('PGHOST') or ''
+postgres_port = os.environ.get('POSTGRES_PORT') or os.environ.get('PGPORT') or '5432'
+
+if database_from_url:
+    DATABASES = {
+        'default': database_from_url
+    }
+elif postgres_name and postgres_user and postgres_password and postgres_host:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': POSTGRES_DB,
-            'USER': os.environ.get('POSTGRES_USER', 'mytube_user'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'mytube_pass'),
-            'HOST': os.environ.get('POSTGRES_HOST', 'postgres'),
-            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+            'NAME': postgres_name,
+            'USER': postgres_user,
+            'PASSWORD': postgres_password,
+            'HOST': postgres_host,
+            'PORT': postgres_port,
             'CONN_MAX_AGE': 60,
         }
     }
