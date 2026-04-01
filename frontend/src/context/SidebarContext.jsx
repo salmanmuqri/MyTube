@@ -13,5 +13,5 @@ export function SidebarProvider({ children }) {
 }
 
 export function useSidebar() {
-  return useContext(SidebarContext);
+  return useContext(SidebarContext) || { collapsed: true, toggle: () => {} };
 }

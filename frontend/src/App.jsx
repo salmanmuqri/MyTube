@@ -20,13 +20,16 @@ import PlaylistDetailPage from './pages/PlaylistDetailPage';
 import MyVideosPage from './pages/MyVideosPage';
 
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const auth = useAuth() || {};
+  const user = auth.user || null;
+  const loading = Boolean(auth.loading);
   if (loading) return <div className="min-h-screen bg-olive-950 flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-olive-500 border-t-transparent rounded-full" /></div>;
   return user ? children : <Navigate to="/login" />;
 }
 
 function AppRoutes() {
-  const { collapsed } = useSidebar();
+  const sidebar = useSidebar() || { collapsed: true };
+  const collapsed = Boolean(sidebar.collapsed);
   return (
     <div className="min-h-screen bg-olive-950">
       <Navbar />

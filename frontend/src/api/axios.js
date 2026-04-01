@@ -1,5 +1,14 @@
 import axios from 'axios';
 
+function safeParseJson(value, fallback = null) {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
 function normalizeApiBase(rawValue) {
   const value = (rawValue || '/api').trim();
 
@@ -37,7 +46,7 @@ const API = axios.create({
 });
 
 API.interceptors.request.use((config) => {
-  const tokens = JSON.parse(localStorage.getItem('mytube_tokens') || 'null');
+  const tokens = safeParseJson(localStorage.getItem('mytube_tokens'), null);
   if (tokens?.access) {
     config.headers.Authorization = `Bearer ${tokens.access}`;
   }
@@ -50,7 +59,7 @@ API.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const tokens = JSON.parse(localStorage.getItem('mytube_tokens') || 'null');
+      const tokens = safeParseJson(localStorage.getItem('mytube_tokens'), null);
       if (tokens?.refresh) {
         try {
           const { data } = await axios.post(`${API_BASE}/users/token/refresh/`, { refresh: tokens.refresh });

@@ -158,6 +158,7 @@ Copy `.env.example` to `.env` and fill in values:
 | `SECRET_KEY` | — | Django secret key (generate with `openssl rand -base64 50`) |
 | `DEBUG` | `0` | Set `1` for local dev only |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Comma-separated hostnames |
+| `DATABASE_URL` | — | Preferred in production (Railway), full PostgreSQL URL |
 | `POSTGRES_DB` | `mytube` | Database name |
 | `POSTGRES_USER` | `mytube` | Database user |
 | `POSTGRES_PASSWORD` | — | **Must be set** |
@@ -165,6 +166,28 @@ Copy `.env.example` to `.env` and fill in values:
 | `CORS_ALLOWED_ORIGINS` | `http://localhost` | Comma-separated origins |
 | `HTTP_PORT` | `80` | Port exposed by Nginx |
 | `VITE_API_BASE_URL` | `/api` | API base for frontend build |
+
+---
+
+## PostgreSQL CLI (Avoid "role root does not exist")
+
+`psql` uses your OS username by default. On macOS/Linux that may be `root`, which fails unless that DB role exists.
+
+Use explicit credentials instead:
+
+```bash
+# Docker Compose Postgres
+docker compose exec postgres psql -U ${POSTGRES_USER:-mytube} -d ${POSTGRES_DB:-mytube}
+
+# Railway Postgres (preferred)
+psql "$DATABASE_URL"
+```
+
+If you still need host-based login:
+
+```bash
+psql -h <host> -p <port> -U <railway_user> -d <railway_db>
+```
 
 ---
 
