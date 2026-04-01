@@ -15,10 +15,10 @@ Railway hosts your Django backend, PostgreSQL database, and Redis cache all in o
 3. Click **"New Project"**
 4. Choose **"Deploy from GitHub repo"**
 5. Select repository: `salmanmuqri/MyTube`
-6. Choose **`backend/` as the root directory** (important!)
+6. Keep the project at the **repo root** so Railway can read `railway.toml` from the top level
 7. Click **Create**
 
-Railway will automatically detect `Dockerfile` and `railway.toml` and begin building the backend image.
+Railway will automatically detect `railway.toml` and build `backend/Dockerfile` from the repo root.
 
 ### Step 2: Add PostgreSQL Database
 
@@ -106,7 +106,7 @@ Now deploy your React frontend to Vercel, pointing to your live Railway backend.
 2. Sign in with GitHub
 3. Click **"Add New"** → **"Project"**
 4. Find and import `salmanmuqri/MyTube`
-5. **Important**: Set **Root Directory** to `frontend/`
+5. Keep the project at the **repo root** so Vercel can use the top-level `vercel.json`
 6. Click **Deploy**
 
 ### Step 2: Configure Frontend Environment Variables

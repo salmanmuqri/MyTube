@@ -10,7 +10,7 @@ Track your deployment progress here. Complete items in order.
 - [ ] Go to [railway.app](https://railway.app) and sign in
 - [ ] Click "New Project" → "Deploy from GitHub repo"
 - [ ] Select `salmanmuqri/MyTube` repository
-- [ ] Set root directory to `backend/`  
+- [ ] Keep the project at the repo root so Railway can read `railway.toml`
 - [ ] Click "Create" and wait for build to complete
 
 **Status**: ________
@@ -78,7 +78,7 @@ REDIS_URL
 - [ ] Go to [vercel.com](https://vercel.com) and sign in with GitHub
 - [ ] Click "Add New" → "Project"
 - [ ] Find and import `salmanmuqri/MyTube`
-- [ ] **Set root directory to `frontend/`** (critical!)
+- [ ] Keep the project at the repo root so Vercel can use `vercel.json`
 - [ ] Click "Deploy" and wait for build
 - [ ] Note your Vercel domain: `[NAME].vercel.app`
 

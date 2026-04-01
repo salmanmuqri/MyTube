@@ -35,7 +35,7 @@
 
 1. Sign in with GitHub
 2. **New Project** → Select `salmanmuqri/MyTube`
-3. Set root directory to `backend/`
+3. Keep the project at the repo root so Railway can use the top-level `railway.toml`
 4. Add **PostgreSQL** service
 5. Add **Redis** service
 6. Go to Backend → **Variables** tab and add:
@@ -63,7 +63,7 @@ ENABLE_MEDIA_SERVING=true
 
 1. Sign in with GitHub
 2. **Add New** → **Project** → Select `salmanmuqri/MyTube`
-3. Set root directory to `frontend/`
+3. Keep the project at the repo root so Vercel can use the top-level `vercel.json`
 4. Before deploying, add environment variables:
    - `VITE_API_BASE_URL` = `https://[YOUR-RAILWAY-DOMAIN]/api`
    - `VITE_MEDIA_BASE_URL` = `https://[YOUR-RAILWAY-DOMAIN]/media`
