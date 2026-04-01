@@ -11,7 +11,6 @@ healthcheckPath = "/api/health/"
 healthcheckTimeout = 10
 restartPolicyType = "on_failure"
 
-# Railway volumes for persistent storage (replaces Docker VOLUME directive)
 [[volumes]]
 mountPath = "/app/media"
 name = "media-storage"
