@@ -1,7 +1,7 @@
 [build]
 # Railway builds the backend image using the Dockerfile in ./backend
 builder = "dockerfile"
-dockerfilePath = "backend/Dockerfile"
+dockerfilePath = "backend/Dockerfile.railway"
 
 [deploy]
 # Runs migrations then starts gunicorn. $PORT is injected automatically by Railway.
