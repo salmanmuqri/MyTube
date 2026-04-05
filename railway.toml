@@ -8,7 +8,8 @@ dockerfilePath = "backend/Dockerfile.railway"
 # --timeout 1800 is intentional: video uploads can be several GB and take many minutes.
 startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 1800"
 healthcheckPath = "/api/health/"
-healthcheckTimeout = 10
+# Give startup enough time for first-boot migrations and collectstatic before readiness probes fail.
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 
 [[volumes]]
