@@ -5,15 +5,25 @@ import VideoCard from '../components/VideoCard';
 import { MdSubscriptions } from 'react-icons/md';
 import { FiUsers } from 'react-icons/fi';
 
+function normalizeToArray(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.videos)) return payload.videos;
+  if (Array.isArray(payload?.subscriptions)) return payload.subscriptions;
+  return [];
+}
+
 export default function SubscriptionsPage() {
   const [channels, setChannels] = useState([]);
   const [feed, setFeed]         = useState([]);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      getSubscriptions().then(({ data }) => setChannels(data.results || data)),
-      getSubscriptionFeed().then(({ data }) => setFeed(data.results || data)),
+    Promise.allSettled([
+      getSubscriptions().then(({ data }) => setChannels(normalizeToArray(data))),
+      getSubscriptionFeed().then(({ data }) => setFeed(normalizeToArray(data))),
     ]).finally(() => setLoading(false));
   }, []);
 
