@@ -10,7 +10,13 @@ function safeParseJson(value, fallback = null) {
 }
 
 function normalizeApiBase(rawValue) {
-  const value = (rawValue || '/api').trim();
+  const raw = (rawValue || '/api').trim();
+
+  // Allow env values like "my-app.up.railway.app" without protocol.
+  const hostLikePattern = /^((localhost)|([\w-]+(\.[\w-]+)+))(?::\d+)?(\/.*)?$/i;
+  const value = hostLikePattern.test(raw) && !raw.startsWith('/')
+    ? `${raw.startsWith('localhost') ? 'http' : 'https'}://${raw}`
+    : raw;
 
   if (/^https?:\/\//i.test(value)) {
     const url = new URL(value);
