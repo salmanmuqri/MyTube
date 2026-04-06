@@ -1,6 +1,6 @@
 function getBackendBase() {
   const raw = process.env.RAILWAY_BACKEND_URL || process.env.BACKEND_URL || '';
-  return raw.replace(/\/+$/, '');
+  return raw.replace(/\/+$/, '').replace(/\/api$/, '').replace(/\/media$/, '');
 }
 
 export default async function handler(req, res) {

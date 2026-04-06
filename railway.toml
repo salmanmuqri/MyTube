@@ -6,7 +6,7 @@ dockerfilePath = "backend/Dockerfile.railway"
 [deploy]
 # Boot gunicorn immediately for stable health checks on constrained instances.
 # Run migrations manually (or in a separate one-off command) when schema changes.
-startCommand = "gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 1 --threads 4 --timeout 1800 --access-logfile - --error-logfile -"
+startCommand = "gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 1800 --access-logfile - --error-logfile -"
 healthcheckPath = "/api/health/"
 # Give startup enough time for first-boot migrations and collectstatic before readiness probes fail.
 healthcheckTimeout = 300
