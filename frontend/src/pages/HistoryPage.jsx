@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getWatchHistory } from '../api/services';
 import { toAbsoluteMediaUrl } from '../api/axios';
 import { FiClock, FiPlay } from 'react-icons/fi';
+import { normalizeToArray } from '../utils/normalize';
 
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
@@ -17,7 +18,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     getWatchHistory()
-      .then(({ data }) => setHistory(data.results || data))
+      .then(({ data }) => setHistory(normalizeToArray(data)))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

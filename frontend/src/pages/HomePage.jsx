@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { getVideos, getCategories } from '../api/services';
 import VideoCard from '../components/VideoCard';
 import Aurora from '../components/ui/Aurora';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function HomePage() {
   const [videos, setVideos] = useState([]);
@@ -17,7 +18,7 @@ export default function HomePage() {
   const search = searchParams.get('search') || '';
 
   useEffect(() => {
-    getCategories().then(({ data }) => setCategories(data)).catch(() => {});
+    getCategories().then(({ data }) => setCategories(normalizeToArray(data))).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function HomePage() {
       if (search) params.search = search;
       if (selectedCat) params.cat = selectedCat;
       const { data } = await getVideos(params);
-      const results = data.results || data;
+      const results = normalizeToArray(data);
       if (p === 1) {
         setVideos(results);
       } else {

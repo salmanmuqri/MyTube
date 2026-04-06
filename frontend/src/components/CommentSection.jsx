@@ -73,6 +73,7 @@ function CommentItem({ comment, videoId, onReplyAdded }) {
 export default function CommentSection({ videoId, comments, onCommentAdded }) {
   const { user } = useAuth();
   const [text, setText] = useState('');
+  const safeComments = Array.isArray(comments) ? comments : [];
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
@@ -88,7 +89,7 @@ export default function CommentSection({ videoId, comments, onCommentAdded }) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-olive-200 font-medium mb-4">{comments.length} Comments</h3>
+      <h3 className="text-olive-200 font-medium mb-4">{safeComments.length} Comments</h3>
       {user && (
         <div className="flex gap-3 mb-6">
           <div className="w-8 h-8 rounded-full bg-olive-700 flex items-center justify-center text-olive-200 text-xs font-bold uppercase shrink-0">
@@ -109,7 +110,7 @@ export default function CommentSection({ videoId, comments, onCommentAdded }) {
         </div>
       )}
       <div className="space-y-4">
-        {comments.map((comment) => (
+        {safeComments.map((comment) => (
           <CommentItem key={comment.id} comment={comment} videoId={videoId} onReplyAdded={onCommentAdded} />
         ))}
       </div>

@@ -4,16 +4,7 @@ import { getSubscriptions, getSubscriptionFeed } from '../api/services';
 import VideoCard from '../components/VideoCard';
 import { MdSubscriptions } from 'react-icons/md';
 import { FiUsers } from 'react-icons/fi';
-
-function normalizeToArray(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.results)) return payload.results;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.items)) return payload.items;
-  if (Array.isArray(payload?.videos)) return payload.videos;
-  if (Array.isArray(payload?.subscriptions)) return payload.subscriptions;
-  return [];
-}
+import { normalizeToArray } from '../utils/normalize';
 
 export default function SubscriptionsPage() {
   const [channels, setChannels] = useState([]);

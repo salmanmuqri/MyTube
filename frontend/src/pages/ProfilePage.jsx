@@ -6,6 +6,7 @@ import VideoCard from '../components/VideoCard';
 import { FiEdit2, FiSave, FiFilm, FiUsers, FiTrash2, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import CountUp from '../components/ui/CountUp';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
@@ -33,10 +34,10 @@ export default function ProfilePage() {
   }, []);
 
   const loadData = () => {
-    getMyVideos().then(({ data }) => setMyVideos(data.results || data)).catch(() => {});
+    getMyVideos().then(({ data }) => setMyVideos(normalizeToArray(data))).catch(() => {});
     getUserStats().then(({ data }) => setStats(data)).catch(() => {});
-    getSubscriptions().then(({ data }) => setSubs(data.results || data)).catch(() => {});
-    getCategories().then(({ data }) => setCategories(data.results || data)).catch(() => {});
+    getSubscriptions().then(({ data }) => setSubs(normalizeToArray(data))).catch(() => {});
+    getCategories().then(({ data }) => setCategories(normalizeToArray(data))).catch(() => {});
   };
 
   const openEditModal = (video) => {

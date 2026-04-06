@@ -5,6 +5,7 @@ import { getUserDetail, subscribe, checkSubscription, getVideos } from '../api/s
 import VideoCard from '../components/VideoCard';
 import { FiUserPlus, FiUserCheck, FiFilm, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { normalizeToArray } from '../utils/normalize';
 
 function formatNumber(n) {
   if (!n) return '0';
@@ -33,7 +34,7 @@ export default function ChannelPage() {
         setSubCount(data.subscribers_count || 0);
       }),
       getVideos({ uploader: userId, ordering: '-created_at' }).then(({ data }) => {
-        setVideos(data.results || data);
+        setVideos(normalizeToArray(data));
       }),
     ])
       .catch(() => toast.error('Failed to load channel'))

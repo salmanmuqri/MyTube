@@ -5,6 +5,7 @@ import VideoCard from '../components/VideoCard';
 import { FiList, FiLock, FiGlobe, FiTrash2, FiEdit2, FiX, FiPlus, FiArrowLeft, FiSearch } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function PlaylistDetailPage() {
   const { id }           = useParams();
@@ -83,7 +84,7 @@ export default function PlaylistDetailPage() {
     const t = setTimeout(() => {
       setSearchLoading(true);
       getVideos({ search: searchQ, page_size: 10 })
-        .then(({ data }) => setSearchResults(data.results || data))
+        .then(({ data }) => setSearchResults(normalizeToArray(data)))
         .catch(() => {})
         .finally(() => setSearchLoading(false));
     }, 320);

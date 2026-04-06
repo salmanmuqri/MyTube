@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getTrendingVideos } from '../api/services';
 import VideoCard from '../components/VideoCard';
 import { FiTrendingUp } from 'react-icons/fi';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function TrendingPage() {
   const [videos, setVideos] = useState([]);
@@ -9,7 +10,7 @@ export default function TrendingPage() {
 
   useEffect(() => {
     getTrendingVideos()
-      .then(({ data }) => setVideos(data.results || data))
+      .then(({ data }) => setVideos(normalizeToArray(data)))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

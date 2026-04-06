@@ -5,6 +5,7 @@ import { uploadVideo, getCategories } from '../api/services';
 import { FiUploadCloud, FiX, FiFilm } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    getCategories().then(({ data }) => setCategories(data)).catch(() => {});
+    getCategories().then(({ data }) => setCategories(normalizeToArray(data))).catch(() => {});
   }, []);
 
   const onDrop = useCallback((accepted) => {

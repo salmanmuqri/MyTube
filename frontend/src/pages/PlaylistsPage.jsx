@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getPlaylists, createPlaylist, deletePlaylist } from '../api/services';
 import { FiGlobe, FiList, FiLock, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { normalizeToArray } from '../utils/normalize';
 
 export default function PlaylistsPage() {
   const [playlists, setPlaylists] = useState([]);
@@ -16,7 +17,7 @@ export default function PlaylistsPage() {
     const timer = setTimeout(() => {
       setLoading(true);
       getPlaylists(search.trim() ? { search: search.trim() } : undefined)
-        .then(({ data }) => setPlaylists(data.results || data))
+        .then(({ data }) => setPlaylists(normalizeToArray(data)))
         .catch(() => {})
         .finally(() => setLoading(false));
     }, 220);

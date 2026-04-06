@@ -6,6 +6,7 @@ import { logout as logoutApi, getSearchSuggestions } from '../api/services';
 import { FiUpload, FiSearch, FiUser, FiLogOut, FiShield, FiMenu, FiTv } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import GradientText from './ui/GradientText';
+import { normalizeSearchSuggestions } from '../utils/normalize';
 
 export default function Navbar() {
   const { user, logoutUser } = useAuth();
@@ -25,7 +26,7 @@ export default function Navbar() {
     debounceRef.current = setTimeout(async () => {
       try {
         const { data } = await getSearchSuggestions(q);
-        setSuggestions(data);
+        setSuggestions(normalizeSearchSuggestions(data));
       } catch { /* ignore */ }
     }, 280);
     return () => clearTimeout(debounceRef.current);

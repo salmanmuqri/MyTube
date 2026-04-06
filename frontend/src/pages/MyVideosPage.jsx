@@ -4,6 +4,7 @@ import { getMyVideos, updateVideo, deleteVideo } from '../api/services';
 import VideoCard from '../components/VideoCard';
 import { FiFilm, FiUpload, FiEdit2, FiTrash2, FiX, FiSave, FiLoader, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { normalizeToArray } from '../utils/normalize';
 
 /* ─── Edit Modal ────────────────────────────────────────────── */
 function EditModal({ video, onClose, onSave }) {
@@ -223,7 +224,7 @@ export default function MyVideosPage() {
 
   const fetchVideos = () =>
     getMyVideos()
-      .then(({ data }) => setVideos(data.results || data))
+      .then(({ data }) => setVideos(normalizeToArray(data)))
       .catch(() => {})
       .finally(() => setLoading(false));
 
@@ -237,7 +238,7 @@ export default function MyVideosPage() {
     if (!hasProcessing) return;
     const id = setInterval(() => {
       getMyVideos()
-        .then(({ data }) => setVideos(data.results || data))
+        .then(({ data }) => setVideos(normalizeToArray(data)))
         .catch(() => {});
     }, 8000);
     return () => clearInterval(id);

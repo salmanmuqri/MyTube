@@ -27,6 +27,7 @@ import {
   FiUserPlus,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { normalizeToArray } from '../utils/normalize';
 
 function formatNumber(n) {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
@@ -102,7 +103,7 @@ export default function WatchPage() {
     const loadComments = async () => {
       try {
         const { data } = await getComments(id);
-        setComments(data.results || data);
+        setComments(normalizeToArray(data));
       } catch {
         // Ignore comment fetch failures here.
       }
@@ -111,7 +112,7 @@ export default function WatchPage() {
     const loadSimilar = async () => {
       try {
         const { data } = await getSimilarVideos(id);
-        setSimilar(data.results || data);
+        setSimilar(normalizeToArray(data));
       } catch {
         // Ignore similar-video fetch failures here.
       }
@@ -343,7 +344,7 @@ export default function WatchPage() {
 
           <CommentSection videoId={id} comments={comments} onCommentAdded={() => {
             getComments(id)
-              .then(({ data }) => setComments(data.results || data))
+              .then(({ data }) => setComments(normalizeToArray(data)))
               .catch(() => {});
           }} />
         </div>
