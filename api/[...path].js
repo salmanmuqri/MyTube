@@ -3,7 +3,7 @@ function getBackendBase() {
   return raw.replace(/\/+$/, '').replace(/\/api$/, '').replace(/\/media$/, '');
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const backendBase = getBackendBase();
   if (!backendBase) {
     return res.status(500).json({
@@ -52,4 +52,4 @@ export default async function handler(req, res) {
       target,
     });
   }
-}
+};
