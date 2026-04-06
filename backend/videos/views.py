@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.core.files.storage import default_storage
 from .models import Video, Category, Tag, Like, Comment, Playlist, PlaylistVideo
 from .serializers import (
     VideoListSerializer, VideoDetailSerializer, VideoUploadSerializer,
@@ -59,6 +60,25 @@ class VideoDetailView(generics.RetrieveAPIView):
     serializer_class = VideoDetailSerializer
     permission_classes = [permissions.AllowAny]
     lookup_field = 'id'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Self-heal READY records whose processed artifacts are missing.
+        if instance.status == 'READY':
+            hls_exists = bool(instance.hls_path) and default_storage.exists(instance.hls_path.lstrip('/'))
+            if not hls_exists:
+                original_name = (instance.original_file.name if instance.original_file else '').lstrip('/')
+                if original_name and default_storage.exists(original_name):
+                    instance.status = 'PROCESSING'
+                    instance.save(update_fields=['status'])
+                    process_video_celery.delay(str(instance.id))
+                else:
+                    instance.status = 'FAILED'
+                    instance.save(update_fields=['status'])
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class VideoDeleteView(generics.DestroyAPIView):
