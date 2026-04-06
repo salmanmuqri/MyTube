@@ -4,9 +4,9 @@ builder = "dockerfile"
 dockerfilePath = "backend/Dockerfile.railway"
 
 [deploy]
-# Runs migrations then starts gunicorn. $PORT is injected automatically by Railway.
-# --timeout 1800 is intentional: video uploads can be several GB and take many minutes.
-startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 1800"
+# Run migrations then boot gunicorn quickly for health checks.
+# Keep worker count conservative for small Railway instances to avoid boot-time memory pressure.
+startCommand = "python manage.py migrate --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 1800"
 healthcheckPath = "/api/health/"
 # Give startup enough time for first-boot migrations and collectstatic before readiness probes fail.
 healthcheckTimeout = 300
