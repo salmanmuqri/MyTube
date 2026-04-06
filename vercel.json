@@ -2,8 +2,6 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://mytube-backend-prod.up.railway.app/api/$1" },
-    { "source": "/media/(.*)", "destination": "https://mytube-backend-prod.up.railway.app/media/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
