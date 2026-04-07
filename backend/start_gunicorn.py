@@ -23,8 +23,11 @@ def main() -> None:
     else:
         print('DATABASE_URL not set; Django may use fallback database settings.', flush=True)
 
-    # Ensure schema exists before serving requests.
-    subprocess.run([sys.executable, 'manage.py', 'migrate', '--noinput'], check=True)
+    # Ensure schema exists before serving requests, but do not block app boot on migration failures.
+    try:
+        subprocess.run([sys.executable, 'manage.py', 'migrate', '--noinput'], check=False, timeout=180)
+    except Exception as exc:
+        print(f"Startup migration skipped due to error: {exc}", file=sys.stderr, flush=True)
 
     port = resolve_port()
     bind = f"0.0.0.0:{port}"

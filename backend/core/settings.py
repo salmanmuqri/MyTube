@@ -1,4 +1,5 @@
 import os
+import socket
 from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlparse, unquote
@@ -100,6 +101,20 @@ def _database_from_url(raw_url: str):
     }
 
 
+def _db_reachable(config: dict) -> bool:
+    if not config or config.get('ENGINE') != 'django.db.backends.postgresql':
+        return True
+    host = config.get('HOST', '')
+    port = int(config.get('PORT', '5432') or '5432')
+    if not host:
+        return False
+    try:
+        with socket.create_connection((host, port), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 database_from_url = _database_from_url(DATABASE_URL) if DATABASE_URL else None
 
@@ -110,21 +125,38 @@ postgres_host = os.environ.get('POSTGRES_HOST') or os.environ.get('PGHOST') or '
 postgres_port = os.environ.get('POSTGRES_PORT') or os.environ.get('PGPORT') or '5432'
 
 if database_from_url:
-    DATABASES = {
-        'default': database_from_url
-    }
-elif postgres_name and postgres_user and postgres_password and postgres_host:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': postgres_name,
-            'USER': postgres_user,
-            'PASSWORD': postgres_password,
-            'HOST': postgres_host,
-            'PORT': postgres_port,
-            'CONN_MAX_AGE': 60,
+    if _db_reachable(database_from_url):
+        DATABASES = {
+            'default': database_from_url
         }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+elif postgres_name and postgres_user and postgres_password and postgres_host:
+    pg_config = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': postgres_name,
+        'USER': postgres_user,
+        'PASSWORD': postgres_password,
+        'HOST': postgres_host,
+        'PORT': postgres_port,
+        'CONN_MAX_AGE': 60,
     }
+    if _db_reachable(pg_config):
+        DATABASES = {
+            'default': pg_config
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     DATABASES = {
         'default': {
