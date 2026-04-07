@@ -1,19 +1,35 @@
 import os
+import re
 import subprocess
 import sys
 
 
 def resolve_port() -> int:
-    raw = os.environ.get('PORT', '8000').strip()
-    try:
-        port = int(raw)
-    except ValueError:
-        print(f"Invalid PORT value {raw!r}; falling back to 8000", file=sys.stderr)
-        return 8000
-    if not (1 <= port <= 65535):
-        print(f"PORT {port} out of range; falling back to 8000", file=sys.stderr)
-        return 8000
-    return port
+    candidates = [
+        os.environ.get('PORT', ''),
+        os.environ.get('RAILWAY_PORT', ''),
+        os.environ.get('WEB_PORT', ''),
+    ]
+
+    for raw in candidates:
+        value = (raw or '').strip()
+        if not value:
+            continue
+
+        # Handle accidental env values like "$PORT" by dereferencing once.
+        if value.startswith('$') and len(value) > 1:
+            value = os.environ.get(value[1:], value).strip()
+
+        match = re.search(r'\d+', value)
+        if not match:
+            continue
+
+        port = int(match.group(0))
+        if 1 <= port <= 65535:
+            return port
+
+    print('No valid PORT-like value found; falling back to 8080', file=sys.stderr, flush=True)
+    return 8080
 
 
 def main() -> None:
@@ -25,12 +41,13 @@ def main() -> None:
 
     # Ensure schema exists before serving requests, but do not block app boot on migration failures.
     try:
-        subprocess.run([sys.executable, 'manage.py', 'migrate', '--noinput'], check=False, timeout=180)
+        subprocess.run([sys.executable, 'manage.py', 'migrate', '--noinput'], check=False, timeout=120)
     except Exception as exc:
         print(f"Startup migration skipped due to error: {exc}", file=sys.stderr, flush=True)
 
     port = resolve_port()
     bind = f"0.0.0.0:{port}"
+    print(f"Starting gunicorn on {bind}", flush=True)
     os.execvp(
         'gunicorn',
         [
