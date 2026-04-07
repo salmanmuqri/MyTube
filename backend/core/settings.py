@@ -4,6 +4,11 @@ from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlparse, unquote
 
+try:
+    import psycopg2
+except Exception:  # pragma: no cover
+    psycopg2 = None
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get(
@@ -110,8 +115,26 @@ def _db_reachable(config: dict) -> bool:
         return False
     try:
         with socket.create_connection((host, port), timeout=2):
-            return True
+            pass
     except OSError:
+        return False
+
+    # Validate credentials too (not just TCP connectivity).
+    if psycopg2 is None:
+        return False
+
+    try:
+        conn = psycopg2.connect(
+            dbname=config.get('NAME') or '',
+            user=config.get('USER') or '',
+            password=config.get('PASSWORD') or '',
+            host=host,
+            port=port,
+            connect_timeout=3,
+        )
+        conn.close()
+        return True
+    except Exception:
         return False
 
 
