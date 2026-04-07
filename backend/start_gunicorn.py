@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 
 
@@ -16,6 +17,15 @@ def resolve_port() -> int:
 
 
 def main() -> None:
+    db_url = os.environ.get('DATABASE_URL', '').strip()
+    if db_url:
+        print('Using DATABASE_URL for Django database connection.', flush=True)
+    else:
+        print('DATABASE_URL not set; Django may use fallback database settings.', flush=True)
+
+    # Ensure schema exists before serving requests.
+    subprocess.run([sys.executable, 'manage.py', 'migrate', '--noinput'], check=True)
+
     port = resolve_port()
     bind = f"0.0.0.0:{port}"
     os.execvp(
